@@ -1,6 +1,6 @@
 {
   "name": "ableton-osc-chain-selector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Drum chain selector for Ableton Live Instrument Racks via OSC",
   "main": "dist/main/index.js",
   "scripts": {
