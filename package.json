@@ -8,25 +8,55 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "start": "electron-vite preview",
-    "package:mac": "electron-builder --mac",
-    "package:win": "electron-builder --win",
+    "generate-icons": "node scripts/generate-icon.js",
+    "package:mac": "npm run generate-icons && electron-builder --mac",
+    "package:win": "npm run generate-icons && electron-builder --win",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx"
   },
   "build": {
     "appId": "com.abletonosc.chainselector",
     "productName": "Ableton Chain Selector",
+    "icon": "build/icon.png",
     "mac": {
       "category": "public.app-category.music",
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/icon.icns"
     },
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }]
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh",
+      "allowElevation": true
     },
     "npmRebuild": false,
     "files": [
       "dist/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/icon.png",
+        "to": "icon.png"
+      },
+      {
+        "from": "build/tray-icon.png",
+        "to": "tray-icon.png"
+      }
     ],
     "directories": {
       "output": "release"
@@ -48,6 +78,7 @@
     "electron": "^28.2.0",
     "electron-builder": "^24.9.1",
     "electron-vite": "^2.0.0",
+    "png-to-ico": "^3.0.1",
     "typescript": "^5.3.3",
     "vite": "^5.0.12"
   },

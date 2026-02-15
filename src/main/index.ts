@@ -25,6 +25,15 @@ const navigator = new MidiChainNavigator(midi, chainManager);
 // ── Window Creation ───────────────────────────────────────────────
 
 function createWindow(): void {
+  // Set app icon
+  let appIcon: Electron.NativeImage | undefined;
+  try {
+    appIcon = nativeImage.createFromPath(getAppIconPath());
+    if (appIcon.isEmpty()) appIcon = undefined;
+  } catch {
+    appIcon = undefined;
+  }
+
   mainWindow = new BrowserWindow({
     width: 480,
     height: 700,
@@ -32,6 +41,7 @@ function createWindow(): void {
     minHeight: 500,
     title: 'Chain Selector',
     backgroundColor: '#1a1a2e',
+    icon: appIcon,
     alwaysOnTop: config.get('alwaysOnTop'),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -57,9 +67,31 @@ function createWindow(): void {
 
 // ── Tray ──────────────────────────────────────────────────────────
 
+function getTrayIconPath(): string {
+  // In development, use build/ directory; in production, use resources/
+  if (process.env.NODE_ENV === 'development' || process.env.ELECTRON_RENDERER_URL) {
+    return join(__dirname, '../../build/tray-icon.png');
+  }
+  return join(process.resourcesPath, 'tray-icon.png');
+}
+
+function getAppIconPath(): string {
+  if (process.env.NODE_ENV === 'development' || process.env.ELECTRON_RENDERER_URL) {
+    return join(__dirname, '../../build/icon.png');
+  }
+  return join(process.resourcesPath, 'icon.png');
+}
+
 function createTray(): void {
-  // Use a simple 16x16 tray icon
-  const icon = nativeImage.createEmpty();
+  let icon: Electron.NativeImage;
+  try {
+    icon = nativeImage.createFromPath(getTrayIconPath());
+    if (icon.isEmpty()) {
+      icon = nativeImage.createEmpty();
+    }
+  } catch {
+    icon = nativeImage.createEmpty();
+  }
   tray = new Tray(icon);
   tray.setToolTip('Chain Selector');
 

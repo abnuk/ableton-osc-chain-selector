@@ -1,6 +1,10 @@
 node_modules/
 dist/
 release/
+build/icon.*
+build/tray-icon.png
+build/icon-256.png
+build/icon.iconset/
 *.log
 .DS_Store
 *.swp
