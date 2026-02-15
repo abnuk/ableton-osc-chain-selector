@@ -10,4 +10,5 @@ build/icon.iconset/
 *.swp
 *.swo
 .idea/
+.vscode/
 *.iml
