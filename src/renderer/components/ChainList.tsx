@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { ChainItem } from './ChainItem';
 import type { Chain } from '@shared/types';
 
@@ -18,6 +18,14 @@ export const ChainList: React.FC<Props> = ({
   onNext,
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!listRef.current || activeChainIndex < 0) return;
+    const activeEl = listRef.current.querySelector('.chain-item--active');
+    if (activeEl) {
+      activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [activeChainIndex]);
 
   const scrollPage = useCallback((direction: 'up' | 'down') => {
     if (!listRef.current) return;
