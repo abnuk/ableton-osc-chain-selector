@@ -3,7 +3,7 @@ import type { AppConfig, MidiPadConfig } from '@shared/types';
 
 const DEFAULT_CONFIG: AppConfig = {
   oscSendPort: 11000,
-  oscReceivePort: 11001,
+  oscReceivePort: 11002,
   selectedTrackId: null,
   selectedDeviceId: null,
   selectedMidiDevice: null,
@@ -28,6 +28,11 @@ export class ConfigStore {
       name: 'chain-selector-config',
       defaults: DEFAULT_CONFIG,
     });
+
+    // Migrate from default 11001 to 11002 for multi-client support
+    if (this.store.get('oscReceivePort') === 11001) {
+      this.store.set('oscReceivePort', 11002);
+    }
   }
 
   get<K extends keyof AppConfig>(key: K): AppConfig[K] {

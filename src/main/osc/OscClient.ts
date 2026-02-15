@@ -18,11 +18,12 @@ export class OscClient extends EventEmitter {
   private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private lastHeartbeatResponse = 0;
   private _status: ConnectionStatus = 'disconnected';
+  private _registered = false;
 
   constructor(
     private sendHost: string = '127.0.0.1',
     private sendPort: number = 11000,
-    private receivePort: number = 11001
+    private receivePort: number = 11002
   ) {
     super();
   }
@@ -47,7 +48,7 @@ export class OscClient extends EventEmitter {
     });
 
     this.udpPort.on('message', (msg: OscMessage) => {
-      if (msg.address === '/live/test') {
+      if (msg.address === '/live/api/register_listener' || msg.address === '/live/test') {
         this.lastHeartbeatResponse = Date.now();
         if (this._status !== 'connected') {
           this.setStatus('connected');
@@ -62,6 +63,7 @@ export class OscClient extends EventEmitter {
 
     this.udpPort.on('ready', () => {
       console.log(`[OSC] Listening on port ${this.receivePort}, sending to ${this.sendHost}:${this.sendPort}`);
+      this.register();
       this.startHeartbeat();
     });
 
@@ -69,12 +71,35 @@ export class OscClient extends EventEmitter {
   }
 
   disconnect(): void {
+    this.unregister();
     this.stopHeartbeat();
     if (this.udpPort) {
       this.udpPort.close();
       this.udpPort = null;
     }
     this.setStatus('disconnected');
+  }
+
+  /**
+   * Register with AbletonOSC for multi-client listener support.
+   * Sends the receive port so the server knows where to deliver events to this client.
+   * Called on every UDP ready so the server routes responses (including heartbeats) to our port.
+   */
+  private register(): void {
+    console.log(`[OSC] Registering as listener on port ${this.receivePort}`);
+    this.send('/live/api/register_listener', this.receivePort);
+    this._registered = true;
+  }
+
+  /**
+   * Unregister from AbletonOSC multi-client support.
+   * The server will stop sending listener events to this client.
+   */
+  private unregister(): void {
+    if (!this._registered) return;
+    console.log('[OSC] Unregistering listener');
+    this.send('/live/api/unregister_listener');
+    this._registered = false;
   }
 
   send(address: string, ...args: (number | string | boolean)[]): void {
@@ -118,14 +143,17 @@ export class OscClient extends EventEmitter {
 
   private startHeartbeat(): void {
     this.lastHeartbeatResponse = 0;
-    this.send('/live/test');
 
     this.heartbeatInterval = setInterval(() => {
       const now = Date.now();
       if (this._status === 'connected' && this.lastHeartbeatResponse > 0 && now - this.lastHeartbeatResponse > 10000) {
+        this._registered = false;
         this.setStatus('disconnected');
       }
-      this.send('/live/test');
+      // Use register_listener as heartbeat — its response routes through
+      // _resolve_response_addr and arrives on our registered port (11002).
+      // Also keeps the registration alive.
+      this.send('/live/api/register_listener', this.receivePort);
     }, 5000);
   }
 
