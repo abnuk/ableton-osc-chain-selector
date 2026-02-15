@@ -1,0 +1,394 @@
+/* ── Reset & Base ─────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-surface: #0f3460;
+  --bg-hover: #1a4a7a;
+  --text-primary: #e8e8f0;
+  --text-secondary: #8888aa;
+  --text-muted: #555577;
+  --accent: #4fc3f7;
+  --accent-dim: #2196f3;
+  --success: #4caf50;
+  --warning: #ff9800;
+  --danger: #f44336;
+  --border: #2a2a4a;
+  --radius: 8px;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100%;
+}
+
+/* ── App Layout ───────────────────────────────────────────────────── */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ── Connection Bar ───────────────────────────────────────────────── */
+
+.connection-bar {
+  display: flex;
+  gap: 20px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+
+.connection-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connection-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-connected {
+  background: var(--success);
+  box-shadow: 0 0 6px var(--success);
+}
+
+.status-connecting {
+  background: var(--warning);
+  animation: pulse 1.5s infinite;
+}
+
+.status-disconnected {
+  background: var(--danger);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Rack Selector ────────────────────────────────────────────────── */
+
+.rack-selector {
+  flex-shrink: 0;
+}
+
+.rack-selector-row {
+  display: flex;
+  gap: 8px;
+}
+
+.rack-select {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 15px;
+  cursor: pointer;
+  outline: none;
+}
+
+.rack-select:focus {
+  border-color: var(--accent-dim);
+}
+
+/* ── Chain List ────────────────────────────────────────────────────── */
+
+.chain-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+}
+
+.chain-list--empty {
+  justify-content: center;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+.chain-list__scroll-row {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+}
+
+.chain-list__items {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 4px;
+}
+
+.chain-list__scroll-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-scroll {
+  flex: 1;
+  width: 48px;
+  font-size: 22px;
+  padding: 8px 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-scroll:hover {
+  background: var(--accent-dim);
+}
+
+.btn-scroll:active {
+  transform: scale(0.95);
+}
+
+.chain-list__items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chain-list__items::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chain-list__items::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+/* ── Chain Item ────────────────────────────────────────────────────── */
+
+.chain-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 2px solid transparent;
+  border-left: 5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text-primary);
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  outline: none;
+}
+
+.chain-item:hover {
+  background: var(--bg-hover);
+}
+
+.chain-item--active {
+  border-color: var(--accent);
+  border-left-width: 5px;
+  font-weight: 600;
+}
+
+.chain-item__indicator {
+  font-size: 22px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+.chain-item--active .chain-item__indicator {
+  color: var(--accent);
+}
+
+.chain-item__name {
+  flex: 1;
+}
+
+.chain-item__index {
+  font-size: 13px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── Navigation Buttons ───────────────────────────────────────────── */
+
+.chain-list__nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.chain-list__current {
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────── */
+
+.btn {
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--bg-hover);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-nav {
+  flex: 0 0 auto;
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  background: var(--bg-surface);
+}
+
+.btn-nav:hover {
+  background: var(--accent-dim);
+}
+
+.btn-secondary {
+  font-size: 13px;
+  padding: 8px 14px;
+}
+
+.btn-small {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.btn-learning {
+  background: var(--warning);
+  color: #000;
+  border-color: var(--warning);
+  animation: pulse 1s infinite;
+}
+
+/* ── MIDI Config ──────────────────────────────────────────────────── */
+
+.midi-config {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.midi-config__device-row {
+  display: flex;
+  gap: 8px;
+}
+
+.midi-select {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+
+.midi-select:focus {
+  border-color: var(--accent-dim);
+}
+
+.midi-config__pads {
+  display: flex;
+  gap: 16px;
+}
+
+.midi-config__pad {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.midi-config__pad-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.midi-config__pad-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  flex: 1;
+}

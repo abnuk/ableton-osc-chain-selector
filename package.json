@@ -1,0 +1,58 @@
+{
+  "name": "ableton-osc-chain-selector",
+  "version": "1.0.0",
+  "description": "Drum chain selector for Ableton Live Instrument Racks via OSC",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron-vite preview",
+    "package:mac": "electron-builder --mac",
+    "package:win": "electron-builder --win",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "build": {
+    "appId": "com.abletonosc.chainselector",
+    "productName": "Ableton Chain Selector",
+    "mac": {
+      "category": "public.app-category.music",
+      "target": ["dmg", "zip"]
+    },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "npmRebuild": false,
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    }
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "jzz": "^1.7.6",
+    "osc": "^2.4.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "electron-vite": "^2.0.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.9",
+    "utf-8-validate": "^6.0.5"
+  }
+}
