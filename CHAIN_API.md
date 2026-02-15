@@ -88,6 +88,7 @@ These operate on individual chains. Parameters: `(track_id, device_id, chain_id)
 | `/live/chain/get/devices/name` | track_id, device_id, chain_id | track_id, device_id, chain_id, [name, ...] | Device names within chain |
 | `/live/chain/get/devices/type` | track_id, device_id, chain_id | track_id, device_id, chain_id, [type, ...] | Device types within chain |
 | `/live/chain/get/devices/class_name` | track_id, device_id, chain_id | track_id, device_id, chain_id, [class_name, ...] | Device class names within chain |
+| `/live/chain/set/devices_enabled` | track_id, device_id, chain_id, enabled | | Bulk enable/disable all devices in chain (sets parameter 0 "Device On" on each device; 1 = on, 0 = off). Disabling saves CPU. |
 
 ### Chain-Scoped Listeners
 
@@ -115,19 +116,15 @@ These operate on individual chains. Parameters: `(track_id, device_id, chain_id)
 
 2. List chains:
    /live/device/get/chains/name   track_id, device_id → all chain names
-   /live/device/get/chains/mute   track_id, device_id → all mute states
    /live/device/get/selected_chain track_id, device_id → current selection
 
 3. Subscribe to changes:
    /live/device/start_listen/chains          track_id, device_id
    /live/device/start_listen/selected_chain  track_id, device_id
 
-4. Switch active chain (exclusive — mute all others):
-   /live/chain/set/mute  track_id, device_id, 0, 1   → mute chain 0
-   /live/chain/set/mute  track_id, device_id, 1, 1   → mute chain 1
-   /live/chain/set/mute  track_id, device_id, 2, 0   → unmute chain 2 (active)
-   /live/device/set/selected_chain track_id, device_id, 2  → select in UI
-
-   Or use solo for quick single-chain preview:
-   /live/chain/set/solo  track_id, device_id, 2, 1   → solo chain 2
+4. Switch active chain (enable devices on active, disable on others — saves CPU):
+   /live/chain/set/devices_enabled  track_id, device_id, 0, 0  → disable chain 0 devices
+   /live/chain/set/devices_enabled  track_id, device_id, 1, 0  → disable chain 1 devices
+   /live/chain/set/devices_enabled  track_id, device_id, 2, 1  → enable chain 2 devices (active)
+   /live/device/set/selected_chain  track_id, device_id, 2     → select in UI
 ```

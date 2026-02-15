@@ -4,7 +4,7 @@ export interface Chain {
   index: number;
   name: string;
   colorIndex: number;
-  isSoloed: boolean;
+  isActive: boolean;
 }
 
 export interface RackDevice {

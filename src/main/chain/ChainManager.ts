@@ -5,7 +5,8 @@ import type { Chain, ChainState, RackDevice } from '@shared/types';
 
 /**
  * Manages chain state for a single rack device.
- * Handles solo-based chain switching, next/prev navigation, and listener subscriptions.
+ * Handles device-enable/disable chain switching, next/prev navigation, and listener subscriptions.
+ * Selecting a chain enables all devices on it and disables devices on the previous chain (saves CPU).
  */
 export class ChainManager extends EventEmitter {
   private chains: Chain[] = [];
@@ -51,21 +52,21 @@ export class ChainManager extends EventEmitter {
   }
 
   /**
-   * Select a chain by index (solo it).
+   * Select a chain by index (enable its devices, disable devices on the previous chain).
    */
   async selectChain(index: number): Promise<void> {
     if (!this.rack || index < 0 || index >= this.chains.length) return;
     const { trackId, deviceId } = this.rack;
 
-    // Unsolo previous chain, then solo the new one (LOM doesn't auto-unsolo)
+    // Disable devices on previous chain, enable on new one
     if (this.activeChainIndex >= 0 && this.activeChainIndex !== index) {
-      this.osc.send('/live/chain/set/solo', trackId, deviceId, this.activeChainIndex, 0);
+      this.osc.send('/live/chain/set/devices_enabled', trackId, deviceId, this.activeChainIndex, 0);
     }
-    this.osc.send('/live/chain/set/solo', trackId, deviceId, index, 1);
+    this.osc.send('/live/chain/set/devices_enabled', trackId, deviceId, index, 1);
     this.osc.send('/live/device/set/selected_chain', trackId, deviceId, index);
 
     this.activeChainIndex = index;
-    this.updateSoloStates(index);
+    this.updateActiveStates(index);
     this.emitState();
   }
 
@@ -92,29 +93,32 @@ export class ChainManager extends EventEmitter {
     const { trackId, deviceId } = this.rack;
 
     try {
-      const [namesMsg, colorsMsg, soloMsg, selectedMsg] = await Promise.all([
+      const [namesMsg, colorsMsg, selectedMsg] = await Promise.all([
         this.osc.request('/live/device/get/chains/name', trackId, deviceId),
         this.osc.request('/live/device/get/chains/color_index', trackId, deviceId),
-        this.osc.request('/live/device/get/chains/solo', trackId, deviceId),
         this.osc.request('/live/device/get/selected_chain', trackId, deviceId),
       ]);
 
       // args: [track_id, device_id, ...values]
       const names = namesMsg.args.slice(2).map((a) => a.value as string);
       const colors = colorsMsg.args.slice(2).map((a) => a.value as number);
-      const solos = soloMsg.args.slice(2).map((a) => a.value as number);
+      const selectedIndex = selectedMsg.args[2]?.value as number ?? 0;
+
+      this.activeChainIndex = selectedIndex;
 
       this.chains = names.map((name, i) => ({
         index: i,
         name,
         colorIndex: colors[i] ?? 0,
-        isSoloed: solos[i] === 1,
+        isActive: i === this.activeChainIndex,
       }));
 
-      // Determine active chain from solo states or selected_chain
-      const soloedIndex = solos.findIndex((s) => s === 1);
-      const selectedIndex = selectedMsg.args[2]?.value as number ?? 0;
-      this.activeChainIndex = soloedIndex >= 0 ? soloedIndex : selectedIndex;
+      // Initialize device states: enable active chain, disable all others.
+      // Also unsolo all chains to clean up any previous solo state.
+      for (let i = 0; i < this.chains.length; i++) {
+        this.osc.send('/live/chain/set/devices_enabled', trackId, deviceId, i, i === this.activeChainIndex ? 1 : 0);
+        this.osc.send('/live/chain/set/solo', trackId, deviceId, i, 0);
+      }
     } catch (err) {
       console.error('[ChainManager] Error loading chains:', err);
       this.chains = [];
@@ -146,7 +150,7 @@ export class ChainManager extends EventEmitter {
       const chainIndex = msg.args[2]?.value as number;
       if (msgTrack === trackId && msgDevice === deviceId) {
         this.activeChainIndex = chainIndex;
-        this.updateSoloStates(chainIndex);
+        this.updateActiveStates(chainIndex);
         this.emitState();
       }
     });
@@ -165,10 +169,10 @@ export class ChainManager extends EventEmitter {
     this.unsubscribers = [];
   }
 
-  private updateSoloStates(activeIndex: number): void {
+  private updateActiveStates(activeIndex: number): void {
     this.chains = this.chains.map((chain) => ({
       ...chain,
-      isSoloed: chain.index === activeIndex,
+      isActive: chain.index === activeIndex,
     }));
   }
 
